@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace NetworkUtil
 {
-    public class Common
+    public class CommonInternal
     {
+        /// <summary>
+        /// Método que indica se uma pasta está ou não acessível.
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
         public static bool IsAccessableFolder(DirectoryInfo folder)
         {
             bool result = true;

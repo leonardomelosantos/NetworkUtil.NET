@@ -1,51 +1,135 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
 
 namespace NetworkUtil
 {
+    /// <summary>
+    /// Classe responsável pelo mapeamento de unidades de rede. Utilize os métodos estáticos.
+    /// </summary>
     public class SharedContentMapping
     {
+
+        #region Public methods
+
+        /// <summary>
+        /// Static method with main parameters
+        /// </summary>
+        /// <param name="unitDrive">Sample: X:</param>
+        /// <param name="pathNetwork">Sample: \\myserver</param>
+        /// <param name="username">Sample: domain\billgates</param>
+        /// <param name="password"></param>
+        public static ResultOperation MapDrive(string unitDrive, string pathNetwork, string username, string password)
+        {
+            ResultOperation result = new ResultOperation();
+            result.ProcessedOK = true;
+
+            try
+            {
+                // Verificando se os parâmetros de mapeamento foram mencionados no Web.config
+                if (!string.IsNullOrEmpty(unitDrive) && !string.IsNullOrEmpty(pathNetwork)) // && !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+                {
+                    // Verificando se o mapeamento já existe, pois se já existir não precisará mais proceder com o mapeamento
+                    DirectoryInfo rootFolder = new DirectoryInfo(unitDrive + (unitDrive.EndsWith(":") ? "" : ":") + @"\");
+                    if (!CommonInternal.IsAccessableFolder(rootFolder))
+                    {
+                        // Utilizando a API de mapeamento
+                        SharedContentMapping networkExtendedDrive = new SharedContentMapping();
+                        networkExtendedDrive.Force = true;
+                        networkExtendedDrive.Persistent = true;
+                        networkExtendedDrive.LocalDrive = unitDrive + (unitDrive.EndsWith(":") ? "" : ":");
+                        networkExtendedDrive.PromptForCredentials = false;
+                        networkExtendedDrive.ShareName = pathNetwork;
+                        networkExtendedDrive.SaveCredentials = true;
+                        networkExtendedDrive.MapDrive(username, password);
+                        networkExtendedDrive = null;
+                    }
+                }
+                else
+                {
+                    result.ProcessedOK = false;
+                    result.Message = "Drive destination and network path are necessary for mapping drive.";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ProcessedOK = false;
+                result.Exception = ex;
+            }
+
+            return result;
+        }
+
+        #region Wrapper methods
+
+        /// <summary>
+        /// Map network drive without credentials
+        /// </summary>
+        public void MapDrive() { MapDriveInternal(null, null); }
+
+        /// <summary>
+        /// Map network drive using password
+        /// </summary>
+        /// <param name="pPassword"></param>
+        public void MapDrive(string pPassword) { MapDriveInternal(null, pPassword); }
+
+        /// <summary>
+        /// Map network drive using username and password
+        /// </summary>
+        /// <param name="pUsername"></param>
+        /// <param name="pPassword"></param>
+        public void MapDrive(string pUsername, string pPassword) { MapDriveInternal(pUsername, pPassword); }
+
+        /// <summary>
+        /// Unmap network drive
+        /// </summary>
+        public void UnMapDrive() { UnMapDriveInternal(this.Force); }
+
+        /// <summary>
+        /// Check / restore persistent network drive
+        /// </summary>
+        public void RestoreDrives() { RestoreDriveInternal(); }
+
+        #endregion
+
+        #endregion
+
+        #region Methods
 
         #region Properties
 
         /// <summary>
         /// Option to save credentials are reconnection...
         /// </summary>
-        public bool SaveCredentials { get; set; }
+        private bool SaveCredentials { get; set; }
 
         /// <summary>
         /// Option to reconnect drive after log off / reboot ...
         /// </summary>
-        public bool Persistent { get; set; }
+        private bool Persistent { get; set; }
 
         /// <summary>
         /// Option to force connection if drive is already mapped...
         /// or force disconnection if network path is not responding...
         /// </summary>
-        public bool Force { get; set; }
+        private bool Force { get; set; }
 
         /// <summary>
         /// Option to prompt for user credintals when mapping a drive
         /// </summary>
-        public bool PromptForCredentials { get; set; }
+        private bool PromptForCredentials { get; set; }
 
         /// <summary>
         /// Drive to be used in mapping / unmapping...
         /// </summary>
-        public string LocalDrive { get; set; }
+        private string LocalDrive { get; set; }
 
         /// <summary>
         /// Share address to map drive to.
         /// </summary>
-        public string ShareName { get; set; }
+        private string ShareName { get; set; }
 
         #endregion
-
-        #region Methods
 
         /// <summary>
         /// Execute the mapping
@@ -108,90 +192,6 @@ namespace NetworkUtil
             int result = WNetRestoreConnectionW(0, null);
             if (result > 0) { throw new System.ComponentModel.Win32Exception(result); }
         }
-
-        #endregion
-
-        #region Static methods
-
-        /// <summary>
-        /// Static method with main parameters
-        /// </summary>
-        /// <param name="unitDrive">Sample: X:</param>
-        /// <param name="pathNetwork">Sample: \\myserver</param>
-        /// <param name="username">Sample: domain\billgates</param>
-        /// <param name="password"></param>
-        public static ResultOperation MapDrive(string unitDrive, string pathNetwork, string username, string password)
-        {
-            ResultOperation result = new ResultOperation();
-            result.ProcessedOK = true;
-
-            try
-            {
-                // Verificando se os parâmetros de mapeamento foram mencionados no Web.config
-                if (!string.IsNullOrEmpty(unitDrive) && !string.IsNullOrEmpty(pathNetwork)) // && !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
-                {
-                    // Verificando se o mapeamento já existe, pois se já existir não precisará mais proceder com o mapeamento
-                    DirectoryInfo rootFolder = new DirectoryInfo(unitDrive + (unitDrive.EndsWith(":") ? "" : ":") + @"\");
-                    if (!Common.IsAccessableFolder(rootFolder))
-                    {
-                        // Utilizando a API de mapeamento
-                        SharedContentMapping networkExtendedDrive = new SharedContentMapping();
-                        networkExtendedDrive.Force = true;
-                        networkExtendedDrive.Persistent = true;
-                        networkExtendedDrive.LocalDrive = unitDrive + (unitDrive.EndsWith(":") ? "" : ":");
-                        networkExtendedDrive.PromptForCredentials = false;
-                        networkExtendedDrive.ShareName = pathNetwork;
-                        networkExtendedDrive.SaveCredentials = true;
-                        networkExtendedDrive.MapDrive(username, password);
-                        networkExtendedDrive = null;
-                    }
-                }
-                else
-                {
-                    result.ProcessedOK = false;
-                    result.Message = "Drive destination and network path are necessary for mapping drive.";
-                }
-            }
-            catch (Exception ex)
-            {
-                result.ProcessedOK = false;
-                result.Exception = ex;
-            }
-
-            return result;
-        }
-
-        #endregion
-
-        #region Wrapper methods
-
-        /// <summary>
-        /// Map network drive without credentials
-        /// </summary>
-        public void MapDrive() { MapDriveInternal(null, null); }
-
-        /// <summary>
-        /// Map network drive using password
-        /// </summary>
-        /// <param name="pPassword"></param>
-        public void MapDrive(string pPassword) { MapDriveInternal(null, pPassword); }
-
-        /// <summary>
-        /// Map network drive using username and password
-        /// </summary>
-        /// <param name="pUsername"></param>
-        /// <param name="pPassword"></param>
-        public void MapDrive(string pUsername, string pPassword) { MapDriveInternal(pUsername, pPassword); }
-
-        /// <summary>
-        /// Unmap network drive
-        /// </summary>
-        public void UnMapDrive() { UnMapDriveInternal(this.Force); }
-
-        /// <summary>
-        /// Check / restore persistent network drive
-        /// </summary>
-        public void RestoreDrives() { RestoreDriveInternal(); }
 
         #endregion
 
