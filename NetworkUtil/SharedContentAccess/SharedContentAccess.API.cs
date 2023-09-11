@@ -1,109 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.IO;
 
 namespace NetworkUtil
 {
     /// <summary>
     /// Classe responsável pela manipulação direta de conteúdo compartilhado (shareds folder).
     /// </summary>
-    public class SharedContentAccess
+    public partial class SharedContentAccess
     {
-
-        #region Public methods
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        public static ResultOperation ConnectSharedContent(string path, string username, string password)
-        {
-            ResultOperation retorno = new ResultOperation();
-            retorno.ProcessedOK = true;
-
-            try
-            {
-                if (!string.IsNullOrEmpty(path) && path.Trim().StartsWith(@"\\") && path.Trim().Length >= 3)
-                {
-                    // Verificando se o mapeamento já existe, pois se já existir não precisará mais proceder com o mapeamento
-                    DirectoryInfo rootFolder = new DirectoryInfo(path);
-                    if (!CommonInternal.IsAccessableFolder(rootFolder))
-                    {
-                        // Utilizando a API de acesso a pastas de rede
-                        ConnectToRemoteInternal(path, username, password);
-
-                        string[] folders = path.Split(new string[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
-                        string subRemoteUNC = string.Empty;
-                        for (int i = 0; i < (folders.Length - 1); i++)
-                        {
-                            subRemoteUNC = subRemoteUNC + folders[i] + @"\";
-                        }
-                        if (!string.IsNullOrEmpty(subRemoteUNC))
-                        {
-                            ConnectSharedContent(@"\\" + subRemoteUNC, username, password);
-                        }
-                    }
-                }
-                else
-                {
-                    retorno.ProcessedOK = false;
-                    retorno.Message = "Folder selected isn't valid network path.";
-                }
-            }
-            catch (Exception ex)
-            {
-                retorno.ProcessedOK = false;
-                retorno.Exception = ex;
-                retorno.Message = ex.Message;
-            }
-
-            return retorno;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="remoteUNC"></param>
-        /// <returns></returns>
-        public static string DisconnectRemote(string remoteUNC)
-        {
-            int ret = WNetCancelConnection2(remoteUNC, CONNECT_UPDATE_PROFILE_2, false);
-            if (ret == NO_ERROR) return null;
-            return GetErrorForNumber(ret);
-        }
-
-        #endregion
-
-        #region Private methods
-
-        private static string ConnectToRemoteInternal(string remoteUNC, string username, string password)
-        {
-            return ConnectToRemoteInternal(remoteUNC, username, password, false);
-        }
-
-        private static string ConnectToRemoteInternal(string remoteUNC, string username, string password, bool promptUser)
-        {
-            NETRESOURCE networkResource = new NETRESOURCE();
-            networkResource.dwType = RESOURCETYPE_DISK_2;
-            networkResource.lpRemoteName = remoteUNC;
-            // nr.lpLocalName = "F:";
-
-            int result;
-            if (promptUser)
-                result = WNetUseConnection(IntPtr.Zero, networkResource, "", "", CONNECT_INTERACTIVE_2 | CONNECT_PROMPT_2, null, null, null);
-            else
-                result = WNetUseConnection(IntPtr.Zero, networkResource, password, username, 0, null, null, null);
-
-            if (result == NO_ERROR) return null;
-
-            return GetErrorForNumber(result);
-        }
-
-        #endregion
-
         #region API Conts
 
         const int RESOURCE_CONNECTED = 0x00000001;
@@ -234,6 +138,5 @@ namespace NetworkUtil
         }
 
         #endregion
-
     }
 }

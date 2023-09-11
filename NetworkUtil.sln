@@ -1,18 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 14.00
-# Visual Studio 2013
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkUtil", "NetworkUtil\NetworkUtil.csproj", "{41B2B7C6-A5E3-4F11-ADA4-9433D98D6BD8}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkUtil.NET", "NetworkUtil\NetworkUtil.NET.csproj", "{41B2B7C6-A5E3-4F11-ADA4-9433D98D6BD8}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs28
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = NetworkUtil\\NetworkUtil.csproj
-		SccProjectName1 = NetworkUtil
-		SccLocalPath1 = NetworkUtil
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -25,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {90B3FC11-3292-4800-83BE-BD9B556A7675}
 	EndGlobalSection
 EndGlobal
